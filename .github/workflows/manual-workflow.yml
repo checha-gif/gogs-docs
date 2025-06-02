@@ -1,0 +1,17 @@
+name: 🔍 Manual Test Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_input:
+        description: 'Введіть будь-що для перевірки'
+        required: false
+        default: 'GOGS_TEST'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🛠️ Початок роботи
+        run: echo "Запущено ручний workflow з параметром: ${{ github.event.inputs.test_input }}"
