@@ -11,7 +11,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
       - name: 🛠️ Початок роботи
         run: echo "Запущено ручний workflow з параметром: ${{ github.event.inputs.test_input }}"
