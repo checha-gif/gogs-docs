@@ -1,4 +1,4 @@
-name: Manual Test Workflow
+name: Manual Workflow
 
 on:
   workflow_dispatch:
@@ -7,5 +7,5 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Start
-        run: echo "Manual workflow executed successfully!"
+      - name: Say Hello
+        run: echo "Hello from manual workflow!"
