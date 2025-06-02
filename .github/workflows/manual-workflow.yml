@@ -1,7 +1,7 @@
-name: Manual Workflow
+name: Manual Test Workflow
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 jobs:
   test:
