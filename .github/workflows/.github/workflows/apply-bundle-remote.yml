@@ -1,0 +1,104 @@
+name: apply-bundle-remote
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "Where to download the bundle from"
+        type: choice
+        required: true
+        default: "artifact"
+        options: ["artifact", "release"]
+      run_id:
+        description: "Workflow run ID that produced the artifact (when source=artifact)"
+        type: string
+        required: false
+      artifact_name:
+        description: "Artifact name to download"
+        type: string
+        required: false
+        default: "release_bundle"
+      pr_number:
+        description: "PR number to update (or use branch)"
+        type: string
+        required: false
+      branch:
+        description: "Branch name to update (if not PR)"
+        type: string
+        required: false
+      dry_run:
+        description: "Preview only (no commit/push)"
+        required: false
+        default: "false"
+        type: choice
+        options: ["false", "true"]
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve branch from PR (if provided)
+        id: getpr
+        if: ${{ inputs.pr_number != '' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner, repo: context.repo.repo,
+              pull_number: parseInt(core.getInput('pr_number'))
+            });
+            core.setOutput('head_ref', pr.data.head.ref);
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.getpr.outputs.head_ref || inputs.branch || github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.x' }
+      - name: Ensure integrator is present
+        run: |
+          test -f integrate_release.py || (echo "::error::integrate_release.py not found at repo root" && exit 1)
+          python -V
+      - name: Guard: require run_id for artifact mode
+        if: ${{ inputs.source == 'artifact' && inputs.run_id == '' }}
+        run: |
+          echo "::error::You must provide 'run_id' when source=artifact."
+          exit 1
+      - name: Download bundle from artifact
+        if: ${{ inputs.source == 'artifact' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.run_id }}
+          path: bundle_src
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Determine bundle path
+        id: bundle
+        run: |
+          set -e
+          BUNDLE=$(ls bundle_src/*.zip 2>/dev/null | head -n 1 || true)
+          if [ -z "$BUNDLE" ]; then
+            echo "::error::Bundle ZIP not found after download step"; exit 1
+          fi
+          echo "path=$BUNDLE" >> $GITHUB_OUTPUT
+      - name: Dry-run (preview)
+        if: ${{ inputs.dry_run == 'true' }}
+        run: python integrate_release.py --bundle "${{ steps.bundle.outputs.path }}" --repo . --dry-run || true
+      - name: Apply bundle
+        if: ${{ inputs.dry_run != 'true' }}
+        run: python integrate_release.py --bundle "${{ steps.bundle.outputs.path }}" --repo . --apply
+      - name: Commit & push changes (when any)
+        if: ${{ inputs.dry_run != 'true' && (hashFiles('**') != '') }}
+        run: |
+          set -e
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "chore(docs): apply release bundle (remote)"
+            git push
+          else
+            echo "No changes to commit."
+          fi
