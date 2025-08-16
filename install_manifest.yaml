@@ -1,0 +1,7 @@
+place:
+  - src: 05_OPERATIONS/Daily_Checklists.md
+    dest: 05_OPERATIONS/Daily_Checklists.md
+  - src: 08_C07/C07_Sheets_Migration.md
+    dest: 08_C07/C07_Sheets_Migration.md
+  - src: 09_OUTREACH/Operational_Order_D1–D4.md
+    dest: 09_OUTREACH/Operational_Order_D1–D4.md
