@@ -1,7 +1,8 @@
 place:
-  - src: 05_OPERATIONS/Daily_Checklists.md
-    dest: 05_OPERATIONS/Daily_Checklists.md
-  - src: 08_C07/C07_Sheets_Migration.md
-    dest: 08_C07/C07_Sheets_Migration.md
-  - src: 09_OUTREACH/Operational_Order_D1–D4.md
-    dest: 09_OUTREACH/Operational_Order_D1–D4.md
+  - src: 05_ОПЕРАЦІЇ/Operational_Order_D1–D4.md
+    dest: 05_ОПЕРАЦІЇ/Operational_Order_D1–D4.md
+# Коли додаси ці файли — просто розкоментуй і створиш їх у репо:
+#  - src: 05_ОПЕРАЦІЇ/Daily_Checklists.md
+#    dest: 05_ОПЕРАЦІЇ/Daily_Checklists.md
+#  - src: 08_C07/C07_Sheets_Migration.md
+#    dest: 08_C07/C07_Sheets_Migration.md
